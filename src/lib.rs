@@ -110,7 +110,7 @@ fn flush(stdout: &mut StdoutLock, init_instant: Instant, last_flush_instant: &mu
     stdout.write_all(b"\n").unwrap();
 }
 
-pub async fn init_logger() {
+pub fn init_logger() {
     let init_instant = Instant::now();
     let mut last_flush_instant = None;
     let mut stdout = stdout().lock();

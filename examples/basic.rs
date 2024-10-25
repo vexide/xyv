@@ -7,7 +7,7 @@ use vexide::{core::time::Instant, prelude::*};
 
 #[vexide::main]
 async fn main(p: Peripherals) {
-    xyv::init_logger().await;
+    xyv::init_logger();
     let start_time = Instant::now();
     let controller = p.primary_controller;
 
