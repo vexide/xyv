@@ -5,17 +5,16 @@ use alloc::{
     boxed::Box,
     string::{String, ToString},
 };
-use core::{any::type_name, cell::LazyCell, fmt::Write as _, mem::take, time::Duration};
+use core::{any::type_name, fmt::Write as _, time::Duration};
 
-use futures_util::pending;
 use hashbrown::HashMap;
-use log::{Level, Metadata, Record};
+use log::{Level, LevelFilter, Metadata, Record};
 use serde::Serialize;
 use serde_json::Value;
 use vexide::{
     core::{
-        io::{stdout, Stdin, Stdout, StdoutLock, Write},
-        sync::{LazyLock, Mutex, OnceLock},
+        io::{stdout, StdoutLock, Write},
+        sync::{LazyLock, Mutex},
         time::Instant,
     },
     prelude::*,
@@ -36,7 +35,7 @@ struct XYVLogger;
 
 impl log::Log for XYVLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() >= Level::Debug
+        metadata.level() <= Level::Debug
     }
 
     fn log(&self, record: &Record) {
@@ -70,7 +69,7 @@ pub fn try_record_output(
 }
 
 fn flush(stdout: &mut StdoutLock, init_instant: Instant, last_flush_instant: &mut Option<Instant>) {
-    let mut updates: vexide::core::sync::MutexGuard<'_, HashMap<String, Value>> = DATA_UPDATES
+    let mut updates = DATA_UPDATES
         .try_lock()
         .expect("the data updates map should be unlocked");
     let mut logs = LOG_BUFFER
@@ -117,6 +116,7 @@ pub async fn init_logger() {
     let mut stdout = stdout().lock();
 
     log::set_logger(Box::leak(Box::new(XYVLogger))).expect("log implementation should not be set");
+    log::set_max_level(LevelFilter::Debug);
 
     spawn(async move {
         loop {

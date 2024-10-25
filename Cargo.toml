@@ -12,7 +12,6 @@ icon = "cool-x"
 compress = true
 
 [dependencies]
-futures-util = { version = "0.3.31", default-features = false, features = ["async-await"] }
 hashbrown = { version = "0.15.0", features = ["serde"] }
 log = { version = "0.4.22" }
 serde = { version = "1.0.213", default-features = false, features = ["derive"] }
