@@ -13,7 +13,7 @@ use serde::Serialize;
 use serde_json::Value;
 use vexide::{
     core::{
-        io::{stdout, StdoutLock, Write},
+        io::{stdout, Stdout, StdoutLock, Write},
         sync::{LazyLock, Mutex},
         time::Instant,
     },
@@ -48,6 +48,12 @@ impl log::Log for XYVLogger {
     }
 
     fn flush(&self) {}
+}
+
+fn free_serial_buffer_bytes(_stdout: &mut StdoutLock) -> usize {
+    unsafe {
+        vex_sdk::vexSerialWriteFree(1).try_into().unwrap()
+    }
 }
 
 pub fn record_output<T: Serialize>(key: impl Into<String>, data: T) {
@@ -95,19 +101,24 @@ fn flush(stdout: &mut StdoutLock, init_instant: Instant, last_flush_instant: &mu
     // There's no need to waste space on an empty console string.
     if !logs.is_empty() {
         updates.insert("/Console".to_string(), Value::String(logs.to_owned()));
-        logs.clear();
     }
 
     let msg = Message {
         data: updates.clone(),
         now_sec: now.duration_since(init_instant).as_secs_f64(),
     };
-    updates.clear();
 
-    let msg_data = serde_json::to_vec(&msg).expect("the xyv message should be serializable");
+    let mut msg_data = serde_json::to_vec(&msg).expect("the xyv message should be serializable");
+    writeln!(msg_data).unwrap();
 
-    stdout.write_all(&msg_data).unwrap();
-    stdout.write_all(b"\n").unwrap();
+    if msg_data.len() > Stdout::INTERNAL_BUFFER_SIZE {
+        unimplemented!("xyv does not support packets over 2048 bytes");
+    } else if msg_data.len() <= free_serial_buffer_bytes(stdout) {
+        logs.clear();
+        updates.clear();
+
+        stdout.write_all(&msg_data).unwrap();
+    }    
 }
 
 pub fn init_logger() {
