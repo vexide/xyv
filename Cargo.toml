@@ -1,0 +1,28 @@
+[package]
+name = "xyv"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# These fields configure default behavior for uploads with `cargo v5`.
+[package.metadata.v5]
+slot = 1
+icon = "cool-x"
+compress = true
+
+[dependencies]
+futures-util = { version = "0.3.31", default-features = false, features = ["async-await"] }
+hashbrown = { version = "0.15.0", features = ["serde"] }
+log = { version = "0.4.22" }
+serde = { version = "1.0.213", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.132", default-features = false, features = [
+    "alloc",
+] }
+vexide = { version = "0.4.0", default-features = false, features = [
+    "async",
+    "core",
+] }
+
+[dev-dependencies]
+vexide = "0.4.0"
