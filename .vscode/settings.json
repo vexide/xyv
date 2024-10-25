@@ -5,4 +5,8 @@
     "rust-analyzer.check.allTargets": false,
     "rust-analyzer.cargo.features": "all",
     "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.check.extraArgs": [
+        "--lib",
+        "--examples"
+    ]
 }

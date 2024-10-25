@@ -9,15 +9,16 @@ use vexide::{core::time::Instant, prelude::*};
 async fn main(p: Peripherals) {
     xyv::init_logger().await;
     let start_time = Instant::now();
-    let mut controller = p.primary_controller;
+    let controller = p.primary_controller;
 
     loop {
+        let state = controller.state().unwrap_or_default();
+
         let elapsed = start_time.elapsed().as_secs_f64();
         let volts = elapsed.sin();
         xyv::record_output("/Arm/OutputVolts", volts);
 
-        let a = controller.button_a.was_pressed().unwrap_or_default();
-        if a {
+        if state.button_a.is_now_pressed() {
             log::info!("button a pressed");
         }
 
